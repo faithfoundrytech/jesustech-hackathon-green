@@ -11,13 +11,21 @@ import { AddTherapistModal } from "@/components/therapist/add-therapist-modal";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Pagination } from "@/components/ui/pagination";
+import { Sidebar } from "@/components/app/sidebar";
+
+const navigationTabs = [
+  { name: 'Dashboard', href: '/church/dashboard' },
+  { name: 'Therapists', href: '/church/therapists' },
+  { name: 'Patients', href: '/church/patients' },
+  { name: 'Appointments', href: '/church/appointments' },
+];
 
 export default function TherapistsPage() {
   const [addTherapistModal, setAddTherapistModal] = useState(false);
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const { therapists, pagination, isLoading, error } = useTherapists(page, limit);
-  
+
   const actions = (
     <Button variant="ghost" size="sm" className="w-full sm:w-auto" onClick={() => setAddTherapistModal(true)}>
       <Plus className="mr-2 h-4 w-4" />
@@ -37,7 +45,7 @@ export default function TherapistsPage() {
           </div>
           <div>
             <Link 
-              href={`/therapists/${row.original._id}`}
+              href={`/church/therapists/${row.original._id}`}
               className="font-medium hover:underline flex items-center gap-2"
             >
               {row.original.name}
@@ -95,30 +103,35 @@ export default function TherapistsPage() {
   ];
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="mt-8">
-        <DataTable
-          columns={columns}
-          data={therapists}
-          searchKey="name"
-          searchPlaceholder="Search therapists..."
-          title="Therapists"
-          actions={actions}
-        />
-        {pagination && (
-          <div className="mt-4">
-            <Pagination
-              currentPage={pagination.page}
-              totalPages={pagination.totalPages}
-              onPageChange={setPage}
+    <div className="flex h-full">
+      <Sidebar tabs={navigationTabs} title="Church Dashboard" />
+      <main className="flex-1 lg:ml-64 overflow-auto">
+        <div className="container mx-auto py-10">
+          <div className="mt-8">
+            <DataTable 
+              columns={columns} 
+              data={therapists} 
+              searchKey="name"
+              searchPlaceholder="Search therapists..."
+              title="Therapists"
+              actions={actions}
             />
+            {pagination && (
+              <div className="mt-4">
+                <Pagination
+                  currentPage={pagination.page}
+                  totalPages={pagination.totalPages}
+                  onPageChange={setPage}
+                />
+              </div>
+            )}
           </div>
-        )}
-      </div>
-      <AddTherapistModal
-        open={addTherapistModal}
-        setOpen={setAddTherapistModal}
-      />
+          <AddTherapistModal
+            open={addTherapistModal}
+            setOpen={setAddTherapistModal}
+          />
+        </div>
+      </main>
     </div>
   );
 } 

@@ -16,7 +16,7 @@ export const columns: ColumnDef<Patient>[] = [
           </div>
           <div className="flex-1">
             <Link 
-              href={`/patients/${row.original._id}`}
+              href={`/church/patients/${row.original._id}`}
               className="font-medium hover:underline flex items-center gap-2"
             >
               {row.original.name}
