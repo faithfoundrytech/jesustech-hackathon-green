@@ -8,7 +8,7 @@ export async function POST(request: Request) {
     await connectDB();
     const data = await request.json();
 
-    console.log(data);
+    console.log(data);  
     // Generate embedding for the new therapist
     const embedding = await generateTherapistEmbedding(data);
     

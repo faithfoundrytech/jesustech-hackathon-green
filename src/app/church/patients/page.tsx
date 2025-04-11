@@ -31,23 +31,6 @@ export default function ChurchPatients() {
   const { patients, pagination, isLoading, error } = usePatients(page, limit);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
 
-  const handleAddPatient = () => {
-    const newPatient: Patient = {
-      id: patients.length + 1,
-      name: "New Patient",
-      age: 0,
-      gender: "Not Specified",
-      concerns: "Not Specified",
-      preferredDays: {
-        days: [],
-        timeSlots: [],
-      },
-    };
-
-    // TODO: Implement add patient mutation
-    console.log('Add patient:', newPatient);
-  };
-
   const handleUploadComplete = (newPatients: Patient[]) => {
     setShowUploadDialog(false);
   };
@@ -61,9 +44,7 @@ export default function ChurchPatients() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={handleAddPatient}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add New
+        <DropdownMenuItem onClick={() => setShowUploadDialog(true)}>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setShowUploadDialog(true)}>
           <Upload className="mr-2 h-4 w-4" />
