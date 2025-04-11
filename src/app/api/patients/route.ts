@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 export async function GET(request: Request) {
   try {
     await connectDB();
-    
+    console.log("Connected to MongoDB", process.env.MONGODB_URI);
     // Get pagination parameters from URL
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
