@@ -1,16 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Therapist } from "@/types/therapist";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { 
   Calendar, 
-  Mail, 
-  Phone, 
   GraduationCap, 
   Languages, 
   Users,
@@ -22,7 +19,6 @@ import {
   Plus
 } from "lucide-react";
 import { useTherapists } from "@/hooks/use-therapists";
-import { useQuery } from "@tanstack/react-query";
 import { SessionsCalendar } from "@/components/therapist/sessions-calendar";
 import { EditTherapistModal } from "@/components/therapist/edit-therapist-modal"
 import { NewSessionModal } from "@/components/therapist/new-session-modal";
@@ -48,24 +44,11 @@ const navigationTabs = [
 export default function TherapistProfilePage() {
   const router = useRouter();
   const params = useParams();
-  const { fetchTherapistById } = useTherapists();
-  const [therapist, setTherapist] = useState<Therapist | null>(null);
+  const { therapist, isLoadingTherapist, therapistError } = useTherapists({ therapistId: params.id as string });
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isNewSessionModalOpen, setIsNewSessionModalOpen] = useState(false);
 
-  const { data: fetchedTherapist, isLoading, error } = useQuery({
-    queryKey: ['therapist', params.id],
-    queryFn: () => fetchTherapistById(params.id as string),
-    enabled: !!params.id,
-  });
-
-  useEffect(() => {
-    if (fetchedTherapist) {
-      setTherapist(fetchedTherapist);
-    }
-  }, [fetchedTherapist]);
-
-  if (isLoading) {
+  if (isLoadingTherapist) {
     return (
       <div className="flex items-center justify-center min-h-screen p-4">
         <div className="text-muted-foreground">Loading...</div>
@@ -73,14 +56,13 @@ export default function TherapistProfilePage() {
     );
   }
 
-  if (error || !therapist) {
+  if (therapistError || !therapist) {
     return (
       <div className="flex items-center justify-center min-h-screen p-4">
         <div className="text-muted-foreground">Therapist not found</div>
       </div>
     );
   }
-
   return (
     <div className="flex h-full">
       <Sidebar tabs={navigationTabs} title="Church Dashboard" />
@@ -262,7 +244,7 @@ export default function TherapistProfilePage() {
                         </div>
                         <Button onClick={() => setIsNewSessionModalOpen(true)}>
                           <Plus className="h-4 w-4 mr-2" />
-                          New Session
+                          Schedule Session
                         </Button>
                       </div>
                     </CardHeader>
@@ -301,6 +283,7 @@ export default function TherapistProfilePage() {
                   // Refresh sessions or update the calendar
                   console.log('Session created');
                 }}
+                availability={therapist.availability}
               />
             </>
           )}

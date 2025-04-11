@@ -92,7 +92,6 @@ export async function GET(request: Request) {
       .populate('patient', 'name')
       .populate('therapist', 'name');
 
-    console.log('Found sessions:', sessions);
 
     return NextResponse.json(sessions);
   } catch (error) {

@@ -1,48 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar as CalendarIcon, Clock, User } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
-
-interface Session {
-  _id: string;
-  start: string;
-  end: string;
-  therapistName: string;
-  status: 'scheduled' | 'completed' | 'cancelled';
-  notes?: string;
-}
+import { useSessions } from "@/hooks/use-sessions";
 
 interface SessionsTabProps {
   patientId: string;
 }
 
 export function SessionsTab({ patientId }: SessionsTabProps) {
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchSessions = async () => {
-      try {
-        console.log('Fetching sessions for patient:', patientId);
-        const response = await fetch(`/api/sessions?patientId=${patientId}`);
-        if (!response.ok) throw new Error('Failed to fetch sessions');
-        const data = await response.json();
-        console.log('Received sessions:', data);
-        setSessions(data);
-      } catch (error) {
-        console.error('Error fetching sessions:', error);
-        toast.error("Failed to load sessions");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchSessions();
-  }, [patientId]);
+  const { data: sessions = [], isLoading } = useSessions(patientId);
 
   if (isLoading) {
     return (

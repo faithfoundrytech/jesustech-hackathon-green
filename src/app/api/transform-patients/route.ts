@@ -14,7 +14,6 @@ export async function POST(request: Request) {
       )
     }
     const processedPatients = await transformExcelToPatientsWithLLM(data)
-    
     await connectDB()
 
     // First, insert/update patients without embeddings

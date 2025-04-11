@@ -17,6 +17,7 @@ interface PIIData {
   occupation?: string;
   church?: string;
   marriageDuration?: string;
+  maritalStatus?: string;
 }
 
 const model = new ChatDeepSeek({
@@ -40,6 +41,7 @@ const extractPII = (data: any, id: number): PIIData => {
   const occupationColumn = findColumnByPatterns(data, ['occupation', 'work', 'job']);
   const churchColumn = findColumnByPatterns(data, ['church', 'place of worship']);
   const marriageDurationColumn = findColumnByPatterns(data, ['marriage duration', 'married for', 'years married']);
+  const maritalStatusColumn = findColumnByPatterns(data, ['marital status', 'married', 'single', 'divorced', 'widowed']);
 
   return {
     id,
@@ -49,6 +51,7 @@ const extractPII = (data: any, id: number): PIIData => {
     occupation: occupationColumn ? data[occupationColumn]?.trim() : undefined,
     church: churchColumn ? data[churchColumn]?.trim() : undefined,
     marriageDuration: marriageDurationColumn ? data[marriageDurationColumn]?.trim() : undefined,
+    maritalStatus: maritalStatusColumn ? data[maritalStatusColumn]?.trim() : undefined,
   };
 };
 
@@ -60,7 +63,8 @@ const removePII = (data: any): any => {
     'phone', 'phone number', 'contact',
     'occupation', 'work', 'job',
     'church', 'place of worship',
-    'marriage duration', 'married for', 'years married'
+    'marriage duration', 'married for', 'years married',
+    'marital status', 'married', 'single', 'divorced', 'widowed'
   ];
 
   const sanitizedData = { ...data };
@@ -86,6 +90,7 @@ const restorePII = (data: any, piiMap: Map<number, PIIData>): any => {
     occupation: pii.occupation,
     church: pii.church,
     marriageDuration: pii.marriageDuration,
+    maritalStatus: pii.maritalStatus
   };
 };
 
@@ -106,13 +111,11 @@ The output should be a JSON array of patient objects with the following structur
   "age": number,
   "gender": string,
   "concerns": string,
+  "maritalStatus": string,
   "preferredDays": {
     "days": string[],
     "timeSlots": { "start": string, "end": string }[]
   },
-  "assignedTherapist": null,
-  "matchScore": 0,
-  "matchReason": ""
 }
 
 Rules:
@@ -169,6 +172,7 @@ export const transformExcelToPatientsWithLLM = async (
       phone: patient.phone,
       occupation: patient.occupation,
       church: patient.church,
+      maritalStatus: patient.maritalStatus,
       marriageDuration: patient.marriageDuration,
       concerns: patient.concerns || "No specific concerns",
       preferredDays: {
@@ -181,10 +185,6 @@ export const transformExcelToPatientsWithLLM = async (
             )
           : [],
       },
-      assignedTherapistId: null,
-      assignedTherapist: null,
-      matchScore: 0,
-      matchReason: "",
     }));
   } catch (error) {
     console.error("Error transforming Excel data with LLM:", error);

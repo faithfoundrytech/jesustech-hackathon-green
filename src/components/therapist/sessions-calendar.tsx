@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from '@/lib/utils';
 import { format, parse, isWithinInterval } from 'date-fns';
-import { toast } from "sonner";
+import { useTherapistSessions } from '@/hooks/use-sessions';
 
 interface TimeSlot {
   start: string;
@@ -52,29 +52,8 @@ export function SessionsCalendar({ therapistId, availability, onSessionClick, on
   const [calendarRef, setCalendarRef] = useState<any>(null);
   const [view, setView] = useState<'dayGridMonth' | 'timeGridWeek' | 'timeGridDay'>('dayGridMonth');
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Fetch sessions when component mounts
-  useEffect(() => {
-    const fetchSessions = async () => {
-      try {
-        console.log('Fetching sessions for therapist:', therapistId);
-        const response = await fetch(`/api/sessions?therapistId=${therapistId}`);
-        if (!response.ok) throw new Error('Failed to fetch sessions');
-        const data = await response.json();
-        console.log('Received sessions:', data);
-        setSessions(data);
-      } catch (error) {
-        console.error('Error fetching sessions:', error);
-        toast.error("Failed to load sessions");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchSessions();
-  }, [therapistId]);
+  
+  const { data: sessions = [], isLoading } = useTherapistSessions(therapistId);
 
   // Convert time slots to Date objects for comparison
   const availableTimeSlots = availability.timeSlots.map(slot => ({
@@ -82,27 +61,59 @@ export function SessionsCalendar({ therapistId, availability, onSessionClick, on
     end: parse(slot.end, 'HH:mm', new Date())
   }));
   
-  const events = sessions.map(session => {
-    console.log('Processing session:', session);
-    return {
-      id: session._id,
-      title: session.patientName,
-      start: session.start,
-      end: session.end,
-      extendedProps: {
-        status: session.status,
-        patientId: session.patientId
-      },
-      className: cn(
-        'cursor-pointer transition-colors',
-        session.status === 'completed' ? 'bg-green-500 border-green-600' :
-        session.status === 'cancelled' ? 'bg-red-500 border-red-600' :
-        'bg-primary border-primary-600'
-      )
-    };
-  });
+  const events = sessions.map(session => ({
+    id: session._id,
+    title: session.patientName,
+    start: session.start,
+    end: session.end,
+    extendedProps: {
+      status: session.status,
+      patientId: session.patientId,
+      count: 1
+    },
+    className: cn(
+      'cursor-pointer transition-colors',
+      session.status === 'completed' ? 'bg-green-500 border-green-600' :
+      session.status === 'cancelled' ? 'bg-red-500 border-red-600' :
+      ''
+    )
+  }));
 
-  console.log('Generated events:', events);
+  // Group events by day for month view
+  const monthViewEvents = events.reduce((acc, event) => {
+    const date = format(new Date(event.start), 'yyyy-MM-dd');
+    const existingEvent = acc.find(e => e.start === date);
+    
+    console.log('Processing event:', {
+      date,
+      eventId: event.id,
+      currentCount: existingEvent?.extendedProps.count || 0
+    });
+    
+    if (existingEvent) {
+      existingEvent.extendedProps.count = (existingEvent.extendedProps.count || 0) + 1;
+      // Keep the most recent session's status for the dot color
+      existingEvent.extendedProps.status = event.extendedProps.status;
+    } else {
+      acc.push({
+        ...event,
+        start: date,
+        end: date,
+        extendedProps: {
+          ...event.extendedProps,
+          count: 1
+        }
+      });
+    }
+    return acc;
+  }, [] as any[]);
+
+  // Debug log to check final counts
+  console.log('Final month view events:', monthViewEvents.map(e => ({
+    date: e.start,
+    count: e.extendedProps.count,
+    sessions: events.filter(ev => format(new Date(ev.start), 'yyyy-MM-dd') === e.start).length
+  })));
 
   // Function to check if a time slot is within therapist's availability
   const isTimeSlotAvailable = (date: Date) => {
@@ -143,10 +154,19 @@ export function SessionsCalendar({ therapistId, availability, onSessionClick, on
     return '';
   };
 
-  const handleViewChange = (newView: 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay') => {
+  const handleViewChange = (newView: 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay', date?: Date) => {
     setView(newView);
     if (calendarRef) {
       calendarRef.getApi().changeView(newView);
+      // Force a re-render of events
+      const currentEvents = calendarRef.getApi().getEvents();
+      calendarRef.getApi().removeAllEvents();
+      calendarRef.getApi().addEventSource(newView === 'dayGridMonth' ? monthViewEvents : events);
+      
+      // If a specific date is provided, navigate to that date
+      if (date) {
+        calendarRef.getApi().gotoDate(date);
+      }
     }
   };
 
@@ -297,14 +317,14 @@ export function SessionsCalendar({ therapistId, availability, onSessionClick, on
               }
             },
             timeGridWeek: {
-              slotMinTime: '08:00:00',
+              slotMinTime: '07:00:00',
               slotMaxTime: '20:00:00',
               slotDuration: '00:30:00',
               slotLabelInterval: '01:00',
               dayHeaderFormat: { weekday: 'short', day: 'numeric' },
             },
             timeGridDay: {
-              slotMinTime: '08:00:00',
+              slotMinTime: '07:00:00',
               slotMaxTime: '20:00:00',
               slotDuration: '00:30:00',
               slotLabelInterval: '01:00',
@@ -340,8 +360,12 @@ export function SessionsCalendar({ therapistId, availability, onSessionClick, on
           }}
           eventClick={(info) => {
             const session = sessions.find(s => s._id === info.event.id);
-            if (session && onSessionClick) {
-              onSessionClick(session);
+            if (session) {
+              if (onSessionClick) {
+                onSessionClick(session);
+              }
+              // Switch to day view and focus on the session's date
+              handleViewChange('timeGridDay', new Date(session.start));
             }
           }}
           select={(info) => {
@@ -353,6 +377,31 @@ export function SessionsCalendar({ therapistId, availability, onSessionClick, on
           expandRows={true}
           stickyHeaderDates={true}
           eventContent={(eventInfo) => {
+            // For month view, show dots
+            if (eventInfo.view.type === 'dayGridMonth') {
+              const startDate = eventInfo.event.start;
+              if (!startDate) return null;
+              
+              const eventDate = format(new Date(startDate), 'yyyy-MM-dd');
+              const dayEvents = events.filter(e => {
+                if (!e.start) return false;
+                return format(new Date(e.start), 'yyyy-MM-dd') === eventDate;
+              });
+              
+              return (
+                <div className="relative h-full w-full">
+                  {dayEvents.map((_, i) => (
+                    <div 
+                      key={i} 
+                      className="absolute w-2 h-2 rounded-full bg-primary"
+                      style={{ left: `${i * 12}px`, top: '50%', transform: 'translateY(-50%)' }}
+                    />
+                  ))}
+                </div>
+              );
+            }
+            
+            // For week and day views, show full details
             return (
               <div className="p-1 text-sm truncate">
                 <div className="font-medium truncate">{eventInfo.event.title}</div>
@@ -361,6 +410,12 @@ export function SessionsCalendar({ therapistId, availability, onSessionClick, on
                 </div>
               </div>
             );
+          }}
+          eventClassNames={(arg) => {
+            if (arg.view.type === 'dayGridMonth') {
+              return '!bg-transparent !border-0 !p-0';
+            }
+            return '';
           }}
         />
       </div>

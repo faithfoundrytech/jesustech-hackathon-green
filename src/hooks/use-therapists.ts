@@ -20,13 +20,19 @@ async function fetchTherapistById(id: string): Promise<Therapist> {
   return response.json();
 }
 
-export function useTherapists(page: number = 1, limit: number = 10) {
+export function useTherapists(params?: { page?: number, limit?: number, therapistId?: string }) {
   const queryClient = useQueryClient();
 
   const { data, isLoading, error, refetch } = useQuery<PaginatedResponse<Therapist>>({
-    queryKey: ['therapists', page, limit],
-    queryFn: () => getTherapists(page, limit),
+    queryKey: ['therapists', params?.page, params?.limit],
+    queryFn: () => getTherapists(params?.page, params?.limit),
     refetchOnWindowFocus: false,
+  });
+
+  const { data: therapist, isLoading: isLoadingTherapist, error: therapistError } = useQuery<Therapist>({
+    queryKey: ['therapist', params?.therapistId],
+    queryFn: () => fetchTherapistById(params?.therapistId),
+    enabled: !!params?.therapistId,
   });
 
   const createTherapistMutation = useMutation<Therapist, Error, Omit<Therapist, "id" | "patients" | "rating" | "avatar">>({
@@ -56,6 +62,8 @@ export function useTherapists(page: number = 1, limit: number = 10) {
     isUpdating: updateTherapistMutation.isPending,
     createError: createTherapistMutation.error,
     updateError: updateTherapistMutation.error,
-    fetchTherapistById,
+    therapist,
+    isLoadingTherapist,
+    therapistError,
   };
 }

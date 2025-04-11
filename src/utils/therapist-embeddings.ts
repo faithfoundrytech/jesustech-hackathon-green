@@ -18,11 +18,9 @@ const createTherapistText = (therapist: Therapist): string => {
     Education Background: ${therapist.education}
     Languages: ${therapist.languages.join(", ")}
     Professional Bio: ${therapist.bio}
-    Availability: ${therapist.availability.days.join(", ")}
   `.trim();
 };
 
-// Simple delay function
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 const generateEmbeddingsFromText = async (
