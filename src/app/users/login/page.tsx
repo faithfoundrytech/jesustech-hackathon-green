@@ -59,9 +59,9 @@ export default function LoginPage() {
             Sign in to your account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Don't have an account?{" "}
+            No Account ?{" "}
             <Link 
-              href="/users/Registration" 
+              href="/users/registration" 
               className="font-medium text-indigo-600 hover:text-indigo-500"
             >
               Register here
