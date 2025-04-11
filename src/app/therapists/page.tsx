@@ -16,7 +16,7 @@ export default function TherapistsPage() {
   const [addTherapistModal, setAddTherapistModal] = useState(false);
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const { therapists, pagination, isLoading, error } = useTherapists(page, limit);
+  const { therapists, pagination, isLoading, error } = useTherapists({ page, limit });
   
   const actions = (
     <Button variant="ghost" size="sm" className="w-full sm:w-auto" onClick={() => setAddTherapistModal(true)}>

@@ -21,18 +21,23 @@ export interface Patient {
   name: string;
   age: number;
   gender: string;
-  email?: string;
+  email: string;
   phone?: string;
   occupation?: string;
   church?: string;
+  maritalStatus: string;
   marriageDuration?: string;
   concerns: string;
   preferredDays: Availability;
   avatar?: string;
+  assignedTherapist?: {
+    name: string;
+    email: string;
+    phone: string;
+  };
 }
-
 export interface Therapist {
-  _id: number;
+  _id: string;
   name: string;
   age: number;
   maritalStatus: string;
@@ -47,7 +52,6 @@ export interface Therapist {
   bio: string;
   patients: number;
 }
-
 export interface Session {
   id: number;
   therapist: Therapist;
