@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Sidebar } from "@/components/app/sidebar";
 import { QueryProvider } from "@/providers/query-provider";
 import { Toaster } from "sonner";
 
@@ -19,12 +18,6 @@ export const metadata: Metadata = {
   title: "Harmony - Therapy Management",
   description: "A comprehensive therapy management system",
 };
-
-const navigationTabs = [
-  { name: 'Patients', href: '/patients' },
-  { name: 'Therapists', href: '/therapists' },
-  { name: 'Sessions', href: '/sessions' },
-];
 
 export default function RootLayout({
   children,

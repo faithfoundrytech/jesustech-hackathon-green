@@ -33,7 +33,7 @@ interface Availability {
 
 interface Session {
   _id: string;
-  title: string;
+  title?: string;
   start: string;
   end: string;
   patientId: string;
@@ -51,9 +51,8 @@ interface SessionsCalendarProps {
 export function SessionsCalendar({ therapistId, availability, onSessionClick, onDateSelect }: SessionsCalendarProps) {
   const [calendarRef, setCalendarRef] = useState<any>(null);
   const [view, setView] = useState<'dayGridMonth' | 'timeGridWeek' | 'timeGridDay'>('dayGridMonth');
-  const [currentDate, setCurrentDate] = useState<Date>(new Date());
   
-  const { data: sessions = [], isLoading } = useTherapistSessions(therapistId);
+  const { data: sessions = [] } = useTherapistSessions(therapistId);
 
   // Convert time slots to Date objects for comparison
   const availableTimeSlots = availability.timeSlots.map(slot => ({
@@ -106,7 +105,7 @@ export function SessionsCalendar({ therapistId, availability, onSessionClick, on
       });
     }
     return acc;
-  }, [] as any[]);
+  }, [] as Array<typeof events[0]>);
 
   // Debug log to check final counts
   console.log('Final month view events:', monthViewEvents.map(e => ({
@@ -139,16 +138,16 @@ export function SessionsCalendar({ therapistId, availability, onSessionClick, on
   };
 
   // Function to style unavailable time slots
-  const slotLaneClassNames = (arg: any) => {
-    if (!isTimeSlotAvailable(arg.date)) {
+  const slotLaneClassNames = (arg: { date?: Date }) => {
+    if (arg.date && !isTimeSlotAvailable(arg.date)) {
       return 'bg-gray-100 opacity-50 cursor-not-allowed';
     }
     return '';
   };
 
   // Function to style unavailable days
-  const dayCellClassNames = (arg: any) => {
-    if (!isDayAvailable(arg.date)) {
+  const dayCellClassNames = (arg: { date?: Date }) => {
+    if (arg.date && !isDayAvailable(arg.date)) {
       return 'bg-gray-100 opacity-50 cursor-not-allowed';
     }
     return '';
@@ -159,7 +158,6 @@ export function SessionsCalendar({ therapistId, availability, onSessionClick, on
     if (calendarRef) {
       calendarRef.getApi().changeView(newView);
       // Force a re-render of events
-      const currentEvents = calendarRef.getApi().getEvents();
       calendarRef.getApi().removeAllEvents();
       calendarRef.getApi().addEventSource(newView === 'dayGridMonth' ? monthViewEvents : events);
       
@@ -180,7 +178,6 @@ export function SessionsCalendar({ therapistId, availability, onSessionClick, on
       } else {
         api.today();
       }
-      setCurrentDate(api.getDate());
     }
   };
 
@@ -293,7 +290,7 @@ export function SessionsCalendar({ therapistId, availability, onSessionClick, on
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
           datesSet={(dateInfo) => {
-            setCurrentDate(dateInfo.view.currentStart);
+            // This event is triggered when the calendar view changes
           }}
           views={{
             dayGridMonth: {

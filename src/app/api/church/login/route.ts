@@ -84,10 +84,11 @@ export async function POST(req: Request) {
     });
     
     return response;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("API: Login error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Login failed", details: error?.message || "Unknown error" },
+      { error: "Login failed", details: errorMessage },
       { status: 500 }
     );
   }

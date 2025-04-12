@@ -11,7 +11,6 @@ import {
   ArrowLeft,
   Settings,
   Activity,
-  Plus,
 } from "lucide-react";
 import { EditTherapistModal } from "@/components/therapist/edit-therapist-modal";
 import { NewSessionModal } from "@/components/therapist/new-session-modal";

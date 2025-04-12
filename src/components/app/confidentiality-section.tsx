@@ -35,7 +35,7 @@ const ConfidentialitySection = () => {
           
           <div className="mt-10 py-6 px-8 bg-primary/10 rounded-lg inline-block shadow-sm hover:shadow-md transition-shadow border border-primary/20">
             <p className="text-primary font-merriweather text-lg italic">
-              "In this sacred space, your story is honored and protected."
+              &quot;In this sacred space, your story is honored and protected.&quot;
             </p>
           </div>
         </div>

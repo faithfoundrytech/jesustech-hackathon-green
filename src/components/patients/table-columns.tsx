@@ -1,6 +1,5 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, User, Plus, Upload, ExternalLink } from "lucide-react";
+import { Calendar, User, ExternalLink } from "lucide-react";
 import { Patient } from "@/types/therapist";
 import Link from "next/link";
 

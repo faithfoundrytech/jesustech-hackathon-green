@@ -8,11 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Search, Loader2, Wand2, Users, Check, X, ChevronRight, ChevronDown, Bell, BellOff, Mail } from "lucide-react";
+import { CalendarIcon, Loader2, Wand2, Users, Check, X, ChevronRight, Mail } from "lucide-react";
 import { format, parse, isWithinInterval } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { FaEnvelope, FaSms, FaWhatsapp } from "react-icons/fa";
+import { FaSms } from "react-icons/fa";
 
 interface Patient {
   _id: string;
@@ -60,13 +60,6 @@ interface NewSessionModalProps {
 
 type ModalState = 'initial' | 'matching' | 'suggestions' | 'manual';
 
-interface NotificationChannel {
-  id: string;
-  name: string;
-  icon: React.ReactNode;
-  enabled: boolean;
-}
-
 export function NewSessionModal({ 
   open, 
   onOpenChange, 
@@ -86,7 +79,6 @@ export function NewSessionModal({
   const [endTime, setEndTime] = useState("");
   const [notes, setNotes] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-  const [selectedTimeSlots, setSelectedTimeSlots] = useState<TimeSlot[]>([]);
   const [selectedStartTime, setSelectedStartTime] = useState<string | null>(null);
   const [sessionDuration, setSessionDuration] = useState(60); // Default 60 minutes
   const [patientAvailability, setPatientAvailability] = useState<Availability | null>(null);
@@ -110,7 +102,6 @@ export function NewSessionModal({
     setEndTime("");
     setNotes("");
     setIsSearching(false);
-    setSelectedTimeSlots([]);
     setSelectedStartTime(null);
     setSessionDuration(60);
     setPatientAvailability(null);
@@ -350,16 +341,6 @@ export function NewSessionModal({
     }
 
     return true;
-  };
-
-  // Generate available time slots for the selected date
-  const getAvailableTimeSlots = () => {
-    if (!date || !isDayAvailable(date)) return [];
-
-    return availableTimeSlots.map(slot => ({
-      start: format(slot.start, 'HH:mm'),
-      end: format(slot.end, 'HH:mm')
-    }));
   };
 
   // Generate time slots for the selected date

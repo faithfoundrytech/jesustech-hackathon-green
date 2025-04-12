@@ -29,7 +29,7 @@ const Home = () => {
               Begin Your Healing Journey
             </h2>
             <p className="text-xl text-foreground">
-              We're here to listen and support you through life's challenges.
+              We&apos;re here to listen and support you through life&apos;s challenges.
             </p>
           </div>
           
@@ -48,9 +48,9 @@ const Home = () => {
               <CardContent className="pt-6">
                 <blockquote className="text-center">
                   <div className="relative text-2xl md:text-3xl text-foreground italic font-merriweather mb-8 px-8">
-                    <span className="absolute top-0 left-0 text-5xl text-primary opacity-30">"</span>
-                    Finding support through Safe Space Sanctuary gave me hope during my darkest time. My counselor listened without judgment and helped me find strength I didn't know I had.
-                    <span className="absolute bottom-0 right-0 text-5xl text-primary opacity-30">"</span>
+                    <span className="absolute top-0 left-0 text-5xl text-primary opacity-30">&quot;</span>
+                    Finding support through Safe Space Sanctuary gave me hope during my darkest time. My counselor listened without judgment and helped me find strength I didn&apos;t know I had.
+                    <span className="absolute bottom-0 right-0 text-5xl text-primary opacity-30">&quot;</span>
                   </div>
                   <footer className="text-foreground">
                     <p className="font-semibold">- Anonymous</p>

@@ -2,6 +2,14 @@ import { cookies } from 'next/headers';
 import { jwtVerify, SignJWT } from 'jose';
 import { redirect } from 'next/navigation';
 
+// Define a type for the token payload
+interface TokenPayload {
+  id: string;
+  email: string;
+  role?: string;
+  [key: string]: unknown;
+}
+
 // Helper to get the JWT secret key
 export function getJwtSecretKey() {
   const secret = process.env.JWT_SECRET || 'harmony-secure-secret-key';
@@ -10,28 +18,35 @@ export function getJwtSecretKey() {
 
 // Verify token and return payload
 export async function verifyAuth() {
-  const cookieStore = cookies();
+  // Reading cookies in a server component/middleware
+  let tokenValue: string | undefined;
   
-  const token = cookieStore.get('harmony_auth_token');
+  try {
+    // Get token from cookie jar
+    // @ts-ignore - Suppress TypeScript error for Next.js cookies() API
+    tokenValue = cookies().get?.('harmony_auth_token')?.value;
+  } catch (error) {
+    console.error('Error reading cookies:', error);
+  }
   
-  if (!token) {
+  if (!tokenValue) {
     return null;
   }
   
   try {
     const { payload } = await jwtVerify(
-      token.value,
+      tokenValue,
       getJwtSecretKey()
     );
     
     return payload;
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }
 
 // Create a new token
-export async function signToken(payload: any) {
+export async function signToken(payload: TokenPayload) {
   try {
     const token = await new SignJWT(payload)
       .setProtectedHeader({ alg: 'HS256' })

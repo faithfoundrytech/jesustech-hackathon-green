@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FaChurch, FaEnvelope, FaLock } from "react-icons/fa";
 import { toast } from "sonner";
@@ -11,7 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 
-export default function ChurchLogin() {
+// Client Component that safely uses useSearchParams
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get('redirect') || '/church/dashboard';
@@ -79,7 +80,7 @@ export default function ChurchLogin() {
                 <h1 className="text-3xl font-bold text-foreground">Welcome Back</h1>
               </div>
               <p className="text-lg text-muted-foreground">
-                Continue your journey with Harmony and support your community's mental health.
+                Continue your journey with Harmony and support your community&apos;s mental health.
               </p>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
@@ -184,7 +185,7 @@ export default function ChurchLogin() {
 
               <div className="mt-6 text-center">
                 <p className="text-sm text-muted-foreground">
-                  Don't have an account?{" "}
+                  Don&apos;t have an account?{" "}
                   <a
                     href="/church/registration"
                     className="font-medium text-primary hover:text-primary/90 transition-colors duration-200"
@@ -198,5 +199,26 @@ export default function ChurchLogin() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Loading fallback component
+function LoginFormFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="w-full max-w-md text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+        <p className="text-muted-foreground">Loading login form...</p>
+      </div>
+    </div>
+  );
+}
+
+// Page component with suspense boundary
+export default function ChurchLogin() {
+  return (
+    <Suspense fallback={<LoginFormFallback />}>
+      <LoginForm />
+    </Suspense>
   );
 } 

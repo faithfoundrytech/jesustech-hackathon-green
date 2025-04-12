@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FaChurch, FaEnvelope, FaLock, FaUser, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
+import { FaChurch, FaEnvelope, FaLock, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -59,7 +59,7 @@ export default function ChurchRegistration() {
       setIsLoading(true);
       
       // Remove confirmPassword as it's not needed for the API
-      const { confirmPassword, ...registerData } = formData;
+      const { confirmPassword: _, ...registerData } = formData;
       console.log("Register data:", registerData);
       
       // Make API request
@@ -122,7 +122,7 @@ export default function ChurchRegistration() {
                 <h1 className="text-3xl font-bold text-foreground">Join Harmony</h1>
               </div>
               <p className="text-lg text-muted-foreground">
-                Register your church and start supporting your community's mental health journey.
+                Register your church and start supporting your community&apos;s mental health journey.
               </p>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">

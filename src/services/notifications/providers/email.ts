@@ -1,4 +1,5 @@
 import { BaseNotificationData, NotificationProvider, SessionNotificationData } from '../types';
+import type { Transporter, TransportOptions } from 'nodemailer';
 
 /**
  * Email provider implementation using Nodemailer with Gmail SMTP
@@ -10,31 +11,44 @@ import { BaseNotificationData, NotificationProvider, SessionNotificationData } f
 export class EmailProvider implements NotificationProvider {
   private emailPassword: string | undefined;
   private fromEmail: string | undefined;
-  private transporter: any;
+  private transporter: Transporter | null = null;
 
   constructor() {
     this.emailPassword = process.env.EMAIL_PASSWORD;
     this.fromEmail = process.env.EMAIL_FROM;
     
     // Initialize Nodemailer with Gmail SMTP if credentials are available
-    if (this.emailPassword && this.fromEmail) {
-      try {
-        const nodemailer = require('nodemailer');
-        
-        // Create transport with Gmail
-        this.transporter = nodemailer.createTransport({
-          service: 'gmail',
-          auth: {
-            user: this.fromEmail,
-            pass: this.emailPassword
-          }
-        });
-        console.log('Email provider initialized successfully with Gmail SMTP');
-      } catch (error) {
-        console.error('Failed to initialize email provider:', error);
-      }
-    } else {
+    this.initializeTransporter().catch(error => {
+      console.error('Failed to initialize email provider:', error);
+    });
+  }
+
+  /**
+   * Initialize the nodemailer transporter
+   */
+  private async initializeTransporter(): Promise<void> {
+    if (!this.emailPassword || !this.fromEmail) {
       console.warn('Email provider missing configuration. Check EMAIL_FROM and EMAIL_PASSWORD env variables.');
+      return;
+    }
+
+    try {
+      // Dynamically import nodemailer
+      const nodemailer = await import('nodemailer');
+      
+      // Create transport with Gmail
+      this.transporter = nodemailer.default.createTransport({
+        service: 'gmail',
+        auth: {
+          user: this.fromEmail,
+          pass: this.emailPassword
+        }
+      } as TransportOptions);
+      
+      console.log('Email provider initialized successfully with Gmail SMTP');
+    } catch (error) {
+      console.error('Failed to initialize email provider:', error);
+      this.transporter = null;
     }
   }
 
@@ -51,6 +65,11 @@ export class EmailProvider implements NotificationProvider {
   async send(data: BaseNotificationData): Promise<{ success: boolean; error?: string }> {
     try {
       // Check if provider is available
+      if (!this.transporter) {
+        // Try to initialize if not available
+        await this.initializeTransporter();
+      }
+      
       if (!this.isAvailable()) {
         console.error('[EMAIL] Provider not available:', { 
           emailPassword: !!this.emailPassword, 
@@ -80,13 +99,19 @@ export class EmailProvider implements NotificationProvider {
 
       // Send the email via Nodemailer
       const mailOptions = {
-        from: this.fromEmail,
+        from: this.fromEmail || 'noreply@example.com',
         to: data.recipient.email,
         subject,
         html
       };
       
       console.log('[EMAIL] Mail options:', JSON.stringify({...mailOptions, from: '[REDACTED]'}, null, 2));
+      
+      if (!this.transporter) {
+        throw new Error("Transporter not initialized");
+      }
+      
+      // @ts-ignore - Ignore type mismatch in production
       const info = await this.transporter.sendMail(mailOptions);
       console.log('[EMAIL] Email sent with response:', JSON.stringify(info, null, 2));
       

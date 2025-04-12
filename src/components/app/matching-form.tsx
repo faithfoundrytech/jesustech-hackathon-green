@@ -5,7 +5,7 @@ import { CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -218,8 +218,8 @@ const MatchingForm = () => {
               className="w-full p-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="" disabled>Please select...</option>
-              <option value="yes">Yes, I'm a member</option>
-              <option value="no">No, I'm new here</option>
+              <option value="yes">Yes, I&apos;m a member</option>
+              <option value="no">No, I&apos;m new here</option>
             </select>
           </div>
           

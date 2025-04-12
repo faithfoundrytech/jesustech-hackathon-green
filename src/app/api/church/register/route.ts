@@ -79,10 +79,11 @@ export async function POST(req: Request) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("API: Registration error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Registration failed", details: error?.message || "Unknown error" },
+      { error: "Registration failed", details: errorMessage },
       { status: 500 }
     );
   }

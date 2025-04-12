@@ -22,7 +22,7 @@ const Hero = () => {
             </h1>
             
             <p className="text-xl md:text-2xl mb-10 text-foreground">
-              Share your story, and we'll match you with a licensed counselor from our faith-based community. Begin your journey toward peace today.
+              Share your story, and we&apos;ll match you with a licensed counselor from our faith-based community. Begin your journey toward peace today.
             </p>
 
             <div className="flex justify-center mb-8">
