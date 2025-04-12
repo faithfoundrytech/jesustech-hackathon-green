@@ -34,7 +34,7 @@ const TherapistDashboard = ({ therapist }: { therapist: Therapist }) => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => router.push("/therapists")}
+            onClick={() => router.push("/church/therapists")}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
