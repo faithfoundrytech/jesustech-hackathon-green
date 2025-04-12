@@ -4,27 +4,19 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Patient } from "@/types/therapist";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { 
-  Calendar, 
-  Mail, 
-  Phone, 
   Briefcase, 
-  Church, 
-  Heart, 
   ArrowLeft,
   Clock,
   User,
-  Settings,
-  Activity
 } from "lucide-react";
 import { usePatients } from "@/hooks/use-patients";
 import { useQuery } from "@tanstack/react-query";
 import { PatientOverview } from "@/components/patient/patient-overview";
 import { SessionsTab } from "@/components/patient/sessions-tab";
-import { PatientNotes } from "@/components/patient/patient-notes";
 import { Sidebar } from "@/components/app/sidebar";
 
 const navigationTabs = [
@@ -148,10 +140,25 @@ export default function PatientProfilePage() {
                   <TabsTrigger value="notes">Notes</TabsTrigger>
                 </TabsList>
                 <TabsContent value="overview">
-                  <PatientOverview patient={patient} />
+                  <PatientOverview 
+                    email={patient.email}
+                    phone={patient.phone}
+                    maritalStatus={patient.maritalStatus}
+                    church={patient.church}
+                    occupation={patient.occupation}
+                    timeSlots={patient.preferredDays?.timeSlots}
+                    assignedTherapist={patient.assignedTherapist}
+                  />
                 </TabsContent>
                 <TabsContent value="sessions">
                   <SessionsTab patientId={params.id as string} />
+                </TabsContent>
+                <TabsContent value="notes">
+                  <Card className="shadow-sm">
+                    <CardContent className="pt-6">
+                      <p className="text-muted-foreground">Patient notes will be displayed here.</p>
+                    </CardContent>
+                  </Card>
                 </TabsContent>
               </Tabs>
             </div>

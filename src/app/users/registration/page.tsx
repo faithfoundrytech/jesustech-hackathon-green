@@ -56,7 +56,7 @@ export default function RegistrationPage() {
       // TODO: Implement your registration logic here
       console.log(values);
       toast.success("Registration successful!");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);

@@ -85,3 +85,22 @@ See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for how to get involved.
 ## 📜 License
 
 This project is licensed under the MIT License – see [`LICENSE`](./LICENSE) for details.
+
+## Notifications Setup
+
+### SMS Notifications with AfricasTalking
+To enable SMS notifications in the application, follow these steps:
+
+1. Sign up for an AfricasTalking account at [https://africastalking.com](https://africastalking.com)
+2. Create an API key from your dashboard
+3. Install the AfricasTalking SDK:
+   ```bash
+   npm install africastalking
+   ```
+4. Add the following environment variables to your `.env.local` file:
+   ```
+   AFRICAS_TALKING_API_KEY=your_api_key
+   AFRICAS_TALKING_USERNAME=your_username
+   AFRICAS_TALKING_SENDER_ID=your_sender_id  # Optional
+   ```
+5. Uncomment the AfricasTalking client initialization in `src/services/notifications/providers/africas-talking.ts`

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Therapist, Patient, Session } from '@/types/therapist';
 
 export function useTherapistMatching() {
   const [isLoading, setIsLoading] = useState(false);

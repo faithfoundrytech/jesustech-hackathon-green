@@ -118,7 +118,7 @@ export function EditTherapistModal({ open, setOpen, therapist }: EditTherapistMo
         <DialogHeader>
           <DialogTitle>Edit Therapist</DialogTitle>
           <DialogDescription>
-            Update the therapist's information.
+            Update the therapist&apos;s information.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>

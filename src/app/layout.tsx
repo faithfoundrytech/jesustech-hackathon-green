@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Sidebar } from "@/components/app/sidebar";
 import { QueryProvider } from "@/providers/query-provider";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,12 +19,6 @@ export const metadata: Metadata = {
   description: "A comprehensive therapy management system",
 };
 
-const navigationTabs = [
-  { name: 'Patients', href: '/patients' },
-  { name: 'Therapists', href: '/therapists' },
-  { name: 'Sessions', href: '/sessions' },
-];
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -35,6 +29,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}>
         <QueryProvider>
           {children}
+          <Toaster position="top-right" richColors />
         </QueryProvider>
       </body>
     </html>

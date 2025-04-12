@@ -8,10 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Search, Loader2, Wand2, Users, Check, X, ChevronRight, ChevronDown } from "lucide-react";
+import { CalendarIcon, Loader2, Wand2, Users, Check, X, ChevronRight, Mail } from "lucide-react";
 import { format, parse, isWithinInterval } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { FaSms } from "react-icons/fa";
 
 interface Patient {
   _id: string;
@@ -78,7 +79,6 @@ export function NewSessionModal({
   const [endTime, setEndTime] = useState("");
   const [notes, setNotes] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-  const [selectedTimeSlots, setSelectedTimeSlots] = useState<TimeSlot[]>([]);
   const [selectedStartTime, setSelectedStartTime] = useState<string | null>(null);
   const [sessionDuration, setSessionDuration] = useState(60); // Default 60 minutes
   const [patientAvailability, setPatientAvailability] = useState<Availability | null>(null);
@@ -86,6 +86,40 @@ export function NewSessionModal({
   const [expandedPatients, setExpandedPatients] = useState<Set<string>>(new Set());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [notificationChannels, setNotificationChannels] = useState<string[]>(['sms', 'email']);
+
+  // Reset all state values to their initial state
+  const resetModalState = () => {
+    setModalState('initial');
+    setSuggestedPatients([]);
+    setSelectedPatient(null);
+    setNumberOfSessions(6);
+    setIsSubmitting(false);
+    setSearchQuery("");
+    setPatients([]);
+    setDate(undefined);
+    setStartTime("");
+    setEndTime("");
+    setNotes("");
+    setIsSearching(false);
+    setSelectedStartTime(null);
+    setSessionDuration(60);
+    setPatientAvailability(null);
+    setExistingSessions([]);
+    setExpandedPatients(new Set());
+    setSelectedDate(null);
+    setSelectedTime(null);
+    setNotificationChannels(['sms', 'email']);
+  };
+
+  // Handle modal open change
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      // Reset state when modal is closed
+      resetModalState();
+    }
+    onOpenChange(open);
+  };
 
   const togglePatientExpansion = (patientId: string) => {
     setExpandedPatients(prev => {
@@ -309,16 +343,6 @@ export function NewSessionModal({
     return true;
   };
 
-  // Generate available time slots for the selected date
-  const getAvailableTimeSlots = () => {
-    if (!date || !isDayAvailable(date)) return [];
-
-    return availableTimeSlots.map(slot => ({
-      start: format(slot.start, 'HH:mm'),
-      end: format(slot.end, 'HH:mm')
-    }));
-  };
-
   // Generate time slots for the selected date
   const generateTimeSlots = () => {
     if (!date || !isDayAvailable(date)) return [];
@@ -399,6 +423,7 @@ export function NewSessionModal({
     setTimeout(() => {
       toast.success("Session suggestion approved successfully");
       onSessionCreated();
+      resetModalState();
       onOpenChange(false);
       setIsSubmitting(false);
     }, 1000);
@@ -411,7 +436,63 @@ export function NewSessionModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
+    if (!selectedPatient || !date || !startTime || !endTime) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    // Validate time slot
+    if (!isTimeSlotAvailable(startTime) || !isTimeSlotAvailable(endTime)) {
+      toast.error("Selected time slot is not available");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const start = new Date(date);
+      const [startHours, startMinutes] = startTime.split(':').map(Number);
+      start.setHours(startHours, startMinutes);
+
+      const end = new Date(date);
+      const [endHours, endMinutes] = endTime.split(':').map(Number);
+      end.setHours(endHours, endMinutes);
+
+      fetch('/api/sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          patientId: selectedPatient._id,
+          therapistId,
+          start: start.toISOString(),
+          end: end.toISOString(),
+          notes,
+          notificationChannels: notificationChannels.length > 0 ? notificationChannels : []
+        }),
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('Failed to create session');
+        return response.json();
+      })
+      .then(() => {
+        toast.success("Session created successfully");
+        onSessionCreated();
+        resetModalState();
+        onOpenChange(false);
+      })
+      .catch(error => {
+        console.error('Error creating session:', error);
+        toast.error("Failed to create session");
+      })
+      .finally(() => {
+        setIsSubmitting(false);
+      });
+    } catch (error) {
+      console.error('Error preparing session data:', error);
+      toast.error("Failed to prepare session data");
+      setIsSubmitting(false);
+    }
   };
 
   // Add new function to get suggested schedule
@@ -502,8 +583,20 @@ export function NewSessionModal({
     );
   };
 
+  // Toggle a specific notification channel
+  const toggleNotificationChannel = (channel: string) => {
+    setNotificationChannels(prev => 
+      prev.includes(channel)
+        ? prev.filter(c => c !== channel)
+        : [...prev, channel]
+    );
+  };
+
+  // Check if a specific channel is enabled
+  const isChannelEnabled = (channel: string) => notificationChannels.includes(channel);
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[600px]" style={{ maxHeight: "85vh", overflow: "hidden" }}>
         <DialogHeader>
           <DialogTitle>New Session</DialogTitle>
@@ -883,6 +976,67 @@ export function NewSessionModal({
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                 />
+              </div>
+
+              {/* Notification Channel Toggles */}
+              <div className="space-y-4">
+                <Label>Notification Channels</Label>
+                <div className="flex flex-col gap-4">
+                  {/* SMS Toggle */}
+                  <div 
+                    className={cn(
+                      "flex items-center justify-between p-4 border rounded-md cursor-pointer",
+                      isChannelEnabled('sms') 
+                        ? "border-primary bg-primary/5" 
+                        : "border-border hover:border-muted-foreground"
+                    )}
+                    onClick={() => toggleNotificationChannel('sms')}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <FaSms className={cn("h-5 w-5", isChannelEnabled('sms') ? "text-primary" : "text-muted-foreground")} />
+                      <span className={cn("font-medium", isChannelEnabled('sms') ? "text-primary" : "")}>SMS Notification</span>
+                    </div>
+                    <div 
+                      className={cn(
+                        "w-10 h-5 rounded-full relative", 
+                        isChannelEnabled('sms') ? "bg-primary" : "bg-muted"
+                      )}
+                    >
+                      <div className={cn(
+                        "absolute w-4 h-4 rounded-full bg-white top-[2px] transition-transform", 
+                        isChannelEnabled('sms') ? "translate-x-5" : "translate-x-1"
+                      )} />
+                    </div>
+                  </div>
+
+                  {/* Email Toggle */}
+                  <div 
+                    className={cn(
+                      "flex items-center justify-between p-4 border rounded-md cursor-pointer",
+                      isChannelEnabled('email') 
+                        ? "border-primary bg-primary/5" 
+                        : "border-border hover:border-muted-foreground"
+                    )}
+                    onClick={() => toggleNotificationChannel('email')}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <Mail className={cn("h-5 w-5", isChannelEnabled('email') ? "text-primary" : "text-muted-foreground")} />
+                      <span className={cn("font-medium", isChannelEnabled('email') ? "text-primary" : "")}>Email Notification</span>
+                    </div>
+                    <div 
+                      className={cn(
+                        "w-10 h-5 rounded-full relative", 
+                        isChannelEnabled('email') ? "bg-primary" : "bg-muted"
+                      )}
+                    >
+                      <div className={cn(
+                        "absolute w-4 h-4 rounded-full bg-white top-[2px] transition-transform", 
+                        isChannelEnabled('email') ? "translate-x-5" : "translate-x-1"
+                      )} />
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">Select how to notify the therapist and patient about this session</p>
               </div>
 
               <Button type="submit" className="w-full" disabled={isSubmitting}>

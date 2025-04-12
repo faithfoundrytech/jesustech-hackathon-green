@@ -28,11 +28,12 @@ const navigationTabs = [
 export default function ChurchPatients() {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const { patients, pagination, isLoading, error } = usePatients(page, limit);
+  const { patients, pagination } = usePatients(page, limit);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
 
-  const handleUploadComplete = (newPatients: Patient[]) => {
+  const handleUploadComplete = (_newPatients: Patient[]) => {
     setShowUploadDialog(false);
+    // We could refresh patients here if needed
   };
 
   const actions = (

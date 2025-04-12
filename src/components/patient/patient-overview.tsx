@@ -8,7 +8,6 @@ import {
   Church, 
   Heart,
   Calendar,
-  Clock,
   User
 } from "lucide-react";
 

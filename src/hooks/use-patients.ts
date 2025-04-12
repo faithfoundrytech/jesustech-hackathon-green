@@ -11,6 +11,16 @@ interface PaginatedResponse<T> {
   };
 }
 
+// Define a type for the patient data to be uploaded
+interface PatientUploadData {
+  name: string;
+  email: string;
+  phone?: string;
+  age?: number;
+  gender?: string;
+  [key: string]: unknown; // Allow additional properties
+}
+
 async function fetchPatients(page: number = 1, limit: number = 10): Promise<PaginatedResponse<Patient>> {
   const response = await fetch(`/api/patients?page=${page}&limit=${limit}`)
   if (!response.ok) {
@@ -27,7 +37,7 @@ async function fetchPatientById(id: string): Promise<Patient> {
   return response.json()
 }
 
-async function uploadPatients(data: any[]): Promise<{ patients: Patient[] }> {
+async function uploadPatients(data: PatientUploadData[]): Promise<{ patients: Patient[] }> {
   const response = await fetch('/api/transform-patients', {
     method: 'POST',
     headers: {
